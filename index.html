@@ -3,95 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>LiderClubex</title>
-<script type="module">
 
-// IMPORT FIREBASE
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// SUA CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyBi6IaFAr5HuN92QQ5NLQ2RwhKRGMR2vIQ",
-  authDomain: "site-a530a.firebaseapp.com",
-  databaseURL: "https://site-a530a-default-rtdb.firebaseio.com",
-  projectId: "site-a530a",
-  storageBucket: "site-a530a.firebasestorage.app",
-  messagingSenderId: "789277580820",
-  appId: "1:789277580820:web:3c53fd75b2b64372699101",
-  measurementId: "G-CWPZ1NR51R"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-let meuVoto = null;
-
-// CADASTRAR
-window.cadastrar = async function() {
-  const nome = document.getElementById("nome").value.trim();
-  if(nome === ""){
-    document.getElementById("cadastro").style.display="none";
-    document.getElementById("votacao").style.display="block";
-    return;
-  }
-
-  const candidatosRef = ref(db,"candidatos");
-  const snapshot = await get(candidatosRef);
-
-  let nomeExiste = false;
-  snapshot.forEach(child=>{
-    if(child.val().nome.toLowerCase() === nome.toLowerCase()){
-      nomeExiste = true;
-    }
-  });
-
-  if(nomeExiste){
-    alert("Esse nome já existe!");
-    return;
-  }
-
-  push(candidatosRef,{
-    nome:nome,
-    votos:0
-  });
-
-  document.getElementById("cadastro").style.display="none";
-  document.getElementById("votacao").style.display="block";
-}
-
-// LISTA EM TEMPO REAL
-const lista = document.getElementById("lista");
-onValue(ref(db,"candidatos"), snapshot=>{
-  lista.innerHTML="";
-  snapshot.forEach(child=>{
-    const data = child.val();
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML = data.nome + " - Votos: " + data.votos;
-
-    div.onclick = ()=>{
-      if(meuVoto === child.key) return;
-
-      if(meuVoto){
-        const oldRef = ref(db,"candidatos/"+meuVoto+"/votos");
-        get(oldRef).then(snap=>{
-          set(oldRef, snap.val()-1);
-        });
-      }
-
-      const newRef = ref(db,"candidatos/"+child.key+"/votos");
-      get(newRef).then(snap=>{
-        set(newRef, snap.val()+1);
-      });
-
-      meuVoto = child.key;
-    };
-
-    lista.appendChild(div);
-  });
-});
-
-</script>
+<!-- Firebase compat (funciona em todos navegadores) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
 body{
@@ -99,6 +14,7 @@ body{
   background:#111;
   color:white;
   text-align:center;
+  margin:0;
 }
 
 input{
@@ -143,91 +59,81 @@ button{
 <div id="lista"></div>
 </div>
 
-</body>
-</html><!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>LiderClubex</title>
-<script type="module">
-
-// IMPORT FIREBASE
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// SUA CONFIG
+<script>
+// CONFIG NOVA
 const firebaseConfig = {
-  apiKey: "AIzaSyBi6IaFAr5HuN92QQ5NLQ2RwhKRGMR2vIQ",
-  authDomain: "site-a530a.firebaseapp.com",
-  databaseURL: "https://site-a530a-default-rtdb.firebaseio.com",
-  projectId: "site-a530a",
-  storageBucket: "site-a530a.firebasestorage.app",
-  messagingSenderId: "789277580820",
-  appId: "1:789277580820:web:3c53fd75b2b64372699101",
-  measurementId: "G-CWPZ1NR51R"
+  apiKey: "AIzaSyBwwpG6G8zwcAGnUsI-CWk274XSgIYKt1k",
+  authDomain: "site1-6d372.firebaseapp.com",
+  databaseURL: "https://site1-6d372-default-rtdb.firebaseio.com",
+  projectId: "site1-6d372",
+  storageBucket: "site1-6d372.firebasestorage.app",
+  messagingSenderId: "426285655102",
+  appId: "1:426285655102:web:d388e18ec9eda092a5dd6f",
+  measurementId: "G-HMJFKQKZX6"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 let meuVoto = null;
 
-// CADASTRAR
-window.cadastrar = async function() {
+// CADASTRO
+function cadastrar(){
   const nome = document.getElementById("nome").value.trim();
+
   if(nome === ""){
     document.getElementById("cadastro").style.display="none";
     document.getElementById("votacao").style.display="block";
     return;
   }
 
-  const candidatosRef = ref(db,"candidatos");
-  const snapshot = await get(candidatosRef);
+  db.ref("candidatos").once("value", snapshot=>{
+    let nomeExiste = false;
 
-  let nomeExiste = false;
-  snapshot.forEach(child=>{
-    if(child.val().nome.toLowerCase() === nome.toLowerCase()){
-      nomeExiste = true;
+    snapshot.forEach(child=>{
+      if(child.val().nome.toLowerCase() === nome.toLowerCase()){
+        nomeExiste = true;
+      }
+    });
+
+    if(nomeExiste){
+      alert("Esse nome já existe!");
+      return;
     }
+
+    db.ref("candidatos").push({
+      nome:nome,
+      votos:0
+    });
+
+    document.getElementById("cadastro").style.display="none";
+    document.getElementById("votacao").style.display="block";
   });
-
-  if(nomeExiste){
-    alert("Esse nome já existe!");
-    return;
-  }
-
-  push(candidatosRef,{
-    nome:nome,
-    votos:0
-  });
-
-  document.getElementById("cadastro").style.display="none";
-  document.getElementById("votacao").style.display="block";
 }
 
-// LISTA EM TEMPO REAL
-const lista = document.getElementById("lista");
-onValue(ref(db,"candidatos"), snapshot=>{
+// LISTA TEMPO REAL
+db.ref("candidatos").on("value", snapshot=>{
+  const lista = document.getElementById("lista");
   lista.innerHTML="";
+
   snapshot.forEach(child=>{
     const data = child.val();
     const div = document.createElement("div");
     div.className="card";
     div.innerHTML = data.nome + " - Votos: " + data.votos;
 
-    div.onclick = ()=>{
+    div.onclick = function(){
+
       if(meuVoto === child.key) return;
 
       if(meuVoto){
-        const oldRef = ref(db,"candidatos/"+meuVoto+"/votos");
-        get(oldRef).then(snap=>{
-          set(oldRef, snap.val()-1);
+        db.ref("candidatos/"+meuVoto+"/votos").once("value", snap=>{
+          db.ref("candidatos/"+meuVoto+"/votos").set(snap.val()-1);
         });
       }
 
-      const newRef = ref(db,"candidatos/"+child.key+"/votos");
-      get(newRef).then(snap=>{
-        set(newRef, snap.val()+1);
+      db.ref("candidatos/"+child.key+"/votos").once("value", snap=>{
+        db.ref("candidatos/"+child.key+"/votos").set(snap.val()+1);
       });
 
       meuVoto = child.key;
@@ -236,58 +142,7 @@ onValue(ref(db,"candidatos"), snapshot=>{
     lista.appendChild(div);
   });
 });
-
 </script>
-
-<style>
-body{
-  font-family:Arial;
-  background:#111;
-  color:white;
-  text-align:center;
-}
-
-input{
-  padding:10px;
-  margin:10px;
-}
-
-button{
-  padding:10px;
-  cursor:pointer;
-}
-
-#lista{
-  max-height:300px;
-  overflow-y:auto;
-  border-top:3px solid white;
-}
-
-.card{
-  padding:15px;
-  border-bottom:1px solid white;
-  cursor:pointer;
-}
-.card:hover{
-  background:#222;
-}
-</style>
-</head>
-
-<body>
-
-<div id="cadastro">
-<h2>Cadastro</h2>
-<p>Se você não colocar nome, poderá entrar, mas não aparecerá como candidato. Só poderá votar.</p>
-<input id="nome" placeholder="Seu nome">
-<br>
-<button onclick="cadastrar()">Entrar</button>
-</div>
-
-<div id="votacao" style="display:none;">
-<h2>Votação</h2>
-<div id="lista"></div>
-</div>
 
 </body>
 </html>
