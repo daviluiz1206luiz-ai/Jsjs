@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eleição para Líder</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(180deg,#4b2c83,#d12b6a);
+    color:white;
+    text-align:center;
+    overflow:hidden;
+}
+
+h1{
+    margin-top:20px;
+}
+
+#ranking{
+    background: gold;
+    color:black;
+    padding:15px;
+    border-radius:20px;
+    width:85%;
+    margin:20px auto;
+    font-weight:bold;
+}
+
+/* ===== TELA CADASTRO ===== */
+
+#cadastroTela{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+}
+
+#cadastroBox{
+    background:white;
+    color:black;
+    padding:25px;
+    border-radius:15px;
+    width:85%;
+    max-width:350px;
+}
+
+#cadastroBox input{
+    width:100%;
+    padding:8px;
+    margin-top:10px;
+}
+
+#cadastroBox button{
+    margin-top:15px;
+    padding:8px;
+    width:100%;
+}
+
+/* ===== PAINEL ===== */
+
+#painel{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    height:60%;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius:25px 25px 0 0;
+    display:flex;
+    flex-direction:column;
+}
+
+#barra{
+    width:60px;
+    height:6px;
+    background:white;
+    border-radius:10px;
+    margin:10px auto;
+}
+
+#lista{
+    overflow-y:auto;
+    flex:1;
+    padding-bottom:20px;
+}
+
+.candidato{
+    background:rgba(255,255,255,0.15);
+    margin:10px;
+    padding:15px;
+    border-radius:15px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.ativo{
+    border:3px solid gold;
+}
+</style>
+</head>
+<body>
+
+<h1>🏆 Eleição para Líder</h1>
+<div id="ranking">Nenhum voto ainda</div>
+
+<!-- TELA DE CADASTRO -->
+<div id="cadastroTela">
+    <div id="cadastroBox">
+        <h3>Cadastro de Candidato</h3>
+        <p style="font-size:13px">
+        Se você não colocar nenhum nome, você pode entrar normalmente,
+        mas seu nome não aparecerá na lista. Você apenas poderá votar.
+        </p>
+        <input type="text" id="nomeCadastro" placeholder="Digite seu nome">
+        <button onclick="entrar()">Entrar</button>
+    </div>
+</div>
+
+<!-- PAINEL -->
+<div id="painel">
+    <div id="barra"></div>
+    <div id="lista"></div>
+</div>
+
+<script>
+
+let candidatos = [];
+let votoAtual = null;
+
+function gerarCodigo(){
+    return Math.random().toString(36).substring(2,8).toUpperCase();
+}
+
+function entrar(){
+
+    let nome = document.getElementById("nomeCadastro").value.trim();
+
+    // Se não digitou nome, entra só para votar
+    if(nome === ""){
+        document.getElementById("cadastroTela").style.display="none";
+        atualizar();
+        return;
+    }
+
+    let nomeNormalizado = nome.toLowerCase();
+
+    // Verifica se já existe
+    let nomeExiste = candidatos.some(c => 
+        c.nome.toLowerCase() === nomeNormalizado
+    );
+
+    if(nomeExiste){
+        alert("Esse nome já está cadastrado! Escolha outro.");
+        return;
+    }
+
+    candidatos.push({
+        nome:nome,
+        votos:0,
+        codigo:gerarCodigo()
+    });
+
+    document.getElementById("cadastroTela").style.display="none";
+    atualizar();
+}
+
+function votar(index){
+
+    if(votoAtual !== null){
+        candidatos[votoAtual].votos--;
+    }
+
+    votoAtual = index;
+    candidatos[index].votos++;
+
+    atualizar();
+}
+
+function atualizar(){
+
+    let lista = document.getElementById("lista");
+    lista.innerHTML="";
+
+    candidatos.forEach((c,index)=>{
+        lista.innerHTML += `
+            <div class="candidato ${votoAtual===index?'ativo':''}" onclick="votar(${index})">
+                <strong>${c.nome}</strong><br>
+                ${c.votos} votos<br>
+                Código: ${c.codigo}
+            </div>
+        `;
+    });
+
+    if(candidatos.length > 0){
+        let ordenado = [...candidatos].sort((a,b)=>b.votos-a.votos);
+        document.getElementById("ranking").innerHTML =
+            `1º - ${ordenado[0].nome} = ${ordenado[0].votos} votos`;
+    } else {
+        document.getElementById("ranking").innerHTML = "Nenhum candidato cadastrado";
+    }
+}
+
+</script>
+
+</body>
+</html>
